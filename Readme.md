@@ -1,6 +1,4 @@
-Perfecto, aquí tienes el **README en formato código listo para copiar completo** 👇
 
-````markdown
 #  E-commerce Chat API con IA (Clean Architecture)
 
 API desarrollada con FastAPI que permite gestionar productos de un e-commerce e interactuar con un asistente inteligente basado en IA (Google Gemini), siguiendo el patrón de Clean Architecture.
