@@ -1,50 +1,227 @@
-# Ecommerce Chat AI
+Perfecto, aquí tienes el **README en formato código listo para copiar completo** 👇
 
-API desarrollada con FastAPI siguiendo arquitectura limpia (Clean Architecture), que permite gestionar productos y realizar consultas mediante inteligencia artificial.
+````markdown
+#  E-commerce Chat API con IA (Clean Architecture)
 
-## Tecnologías
+API desarrollada con FastAPI que permite gestionar productos de un e-commerce e interactuar con un asistente inteligente basado en IA (Google Gemini), siguiendo el patrón de Clean Architecture.
 
-- FastAPI
-- SQLAlchemy
-- SQLite
-- Docker
-- Google Generative AI (Gemini)
+---
 
-## Ejecución del proyecto
+## Tecnologías utilizadas
 
-### Local
+- Python 3.10+
+- FastAPI  
+- SQLAlchemy  
+- SQLite  
+- Docker  
+- Google Gemini AI  
+- Pydantic  
 
-pip install -r requirements.txt  
-python -m uvicorn src.infrastructure.api.main:app --reload  
+---
 
-### Docker
+##  Arquitectura
 
-docker-compose up --build  
+El proyecto sigue **Clean Architecture**, dividido en 3 capas:
 
-## Endpoints
+###  1. Dominio (`src/domain`)
+Contiene las reglas de negocio puras:
+- Entidades (`Product`, `ChatMessage`, `ChatContext`)
+- Interfaces de repositorios  
 
-### GET /products
-Obtiene la lista de productos disponibles.
+---
 
-### POST /chat
-Permite interactuar con la IA.
+###  2. Aplicación (`src/application`)
+Contiene la lógica de negocio:
+- Servicios (`ProductService`, `ChatService`)
+- DTOs (validación de datos)  
 
-Ejemplo:
+---
 
+###  3. Infraestructura (`src/infrastructure`)
+Contiene implementaciones concretas:
+- Base de datos (SQLite)  
+- Repositorios  
+- API (FastAPI)  
+- Integración con IA (Gemini)  
+
+---
+
+## Instalación y ejecución
+
+### 🔹 1. Clonar repositorio
+
+```bash
+git clone <TU_REPOSITORIO>
+cd ecommerce-chat-ai
+````
+
+---
+
+###  2. Crear entorno virtual
+
+```bash
+python -m venv venv
+```
+
+Activar en Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+---
+
+###  3. Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+###  4. Configurar variables de entorno
+
+Crear archivo `.env`:
+
+```
+GEMINI_API_KEY=tu_api_key_aqui
+```
+
+---
+
+###  5. Ejecutar la aplicación
+
+```bash
+python -m uvicorn src.infrastructure.api.main:app --reload
+```
+
+---
+
+###  6. Acceder a Swagger
+
+[http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+##  Docker
+
+Ejecutar con Docker:
+
+```bash
+docker-compose up --build
+```
+
+---
+
+##  Endpoints disponibles
+
+###  Health Check
+
+```
+GET /health
+```
+
+---
+
+###  Productos
+
+Obtener todos los productos:
+
+```
+GET /products
+```
+
+Obtener producto por ID:
+
+```
+GET /products/{id}
+```
+
+---
+
+###  Chat con IA
+
+Enviar mensaje:
+
+```
+POST /chat
+```
+
+Body:
+
+```json
 {
   "session_id": "123",
-  "message": "Recomiendame productos"
+  "message": "Recomiéndame productos"
 }
+```
 
-## Base de datos
+---
 
-- SQLite
-- Ubicación: data/ecommerce_chat.db
+Obtener historial:
+
+```
+GET /chat/history/{session_id}
+```
+
+---
+
+Eliminar historial:
+
+```
+DELETE /chat/history/{session_id}
+```
+
+---
+
+##  Funcionalidades principales
+
+ Gestión de productos
+ Chat inteligente con IA
+ Memoria conversacional por sesión
+ Arquitectura limpia (Clean Architecture)
+ Persistencia con SQLite
+ Contenerización con Docker
+
+---
+
+## Testing
+
+Ejecutar pruebas:
+
+```bash
+pytest
+```
+
+---
 
 ## Evidencias
 
-Las capturas se encuentran en la carpeta `evidencias/`.
+Las evidencias se encuentran en la carpeta:
 
-## Autor
+```
+/evidencias
+```
 
-Paulina Velasquez Londoño
+Incluyen:
+
+Swagger UI
+Logs de Docker
+Contenedores corriendo
+Llamados a la API
+Base de datos
+
+---
+
+##  Autor
+
+Paulina Velásquez
+
+---
+
+##  Notas
+
+ El proyecto utiliza Google Gemini como modelo de IA
+ Se requiere conexión a internet para el funcionamiento del chat
+ Base de datos SQLite local
+

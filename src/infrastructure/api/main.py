@@ -7,10 +7,20 @@ from src.application.product_service import ProductService
 from src.application.chat_service import ChatService
 from src.infrastructure.repositories.product_repository import ProductRepository
 from src.infrastructure.repositories.chat_repository import ChatRepository
+from src.infrastructure.db.models import ProductModel
 
-app = FastAPI()
+# ==============================
+# CREACIÓN DE LA APP
+# ==============================
+app = FastAPI(
+    title="Ecommerce Chat API",
+    description="API con IA para recomendación de productos",
+    version="1.0.0"
+)
 
-# CORS
+# ==============================
+# CONFIGURACIÓN CORS
+# ==============================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,36 +29,66 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ==============================
+# EVENTO DE INICIO
+# ==============================
 @app.on_event("startup")
 def startup():
     """
-    Evento que se ejecuta al iniciar la aplicación.
-    Se encarga de crear las tablas en la base de datos si no existen.
+    Se ejecuta al iniciar la aplicación.
+    - Crea las tablas
+    - Inserta productos iniciales si no existen
     """
     Base.metadata.create_all(bind=engine)
 
+    db = Session(bind=engine)
+
+    # Si no hay productos, insertar datos iniciales
+    if not db.query(ProductModel).first():
+        productos = [
+            ProductModel(name="Nike Air", description="Zapatillas deportivas", brand="Nike", category="Running", size="42", color="Negro", price=120, stock=5),
+            ProductModel(name="Adidas Run", description="Zapatillas cómodas", brand="Adidas", category="Running", size="41", color="Blanco", price=100, stock=8),
+            ProductModel(name="Puma Street", description="Zapatillas urbanas", brand="Puma", category="Casual", size="40", color="Rojo", price=90, stock=10),
+            ProductModel(name="Reebok Classic", description="Estilo clásico", brand="Reebok", category="Casual", size="39", color="Blanco", price=95, stock=6),
+        ]
+
+        for p in productos:
+            db.add(p)
+
+        db.commit()
+        print("✔ Productos iniciales insertados")
+
+
+# ==============================
+# ENDPOINTS
+# ==============================
 
 @app.get("/")
 def home():
     """
-    Endpoint de prueba para verificar que la API está funcionando.
-
-    Returns:
-        dict: mensaje de estado
+    Endpoint de prueba.
     """
-    return {"message": "API funcionando"}
+    return {"message": "API funcionando correctamente 🚀"}
+
+
+@app.get("/health")
+def health():
+    """
+    Verifica el estado de la API.
+    """
+    return {"status": "ok"}
 
 
 @app.get("/products")
 def get_products(db: Session = Depends(get_db)):
     """
-    Endpoint que obtiene todos los productos disponibles.
+    Obtiene todos los productos.
 
     Args:
-        db (Session): sesión de base de datos
+        db (Session): conexión a la base de datos
 
     Returns:
-        list: lista de productos
+        list: productos disponibles
     """
     try:
         repo = ProductRepository(db)
@@ -58,17 +98,35 @@ def get_products(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/products/{product_id}")
+def get_product(product_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene un producto por ID.
+    """
+    try:
+        repo = ProductRepository(db)
+        service = ProductService(repo)
+
+        product = service.get_product_by_id(product_id)
+
+        if not product:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        return product
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/chat")
 def chat(request: dict, db: Session = Depends(get_db)):
     """
-    Endpoint para interactuar con la IA.
+    Endpoint de chat con IA.
 
-    Args:
-        request (dict): contiene session_id y message
-        db (Session): sesión de base de datos
-
-    Returns:
-        dict: respuesta de la IA
+    Body esperado:
+    {
+        "session_id": "123",
+        "message": "Recomiéndame productos"
+    }
     """
     try:
         repo = ChatRepository(db)
@@ -85,27 +143,26 @@ def chat(request: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/init")
-def init_data(db: Session = Depends(get_db)):
+@app.get("/chat/history/{session_id}")
+def get_chat_history(session_id: str, db: Session = Depends(get_db)):
     """
-    Inserta productos de prueba en la base de datos.
-
-    Args:
-        db (Session): sesión de base de datos
-
-    Returns:
-        dict: mensaje de confirmación
+    Obtiene el historial del chat.
     """
-    from src.infrastructure.db.models import ProductModel
+    try:
+        repo = ChatRepository(db)
+        return repo.get_session_history(session_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    products = [
-        ProductModel(name="Nike Air", description="Zapatillas deportivas", brand="Nike", category="Running", price=120, stock=5),
-        ProductModel(name="Adidas Run", description="Zapatillas cómodas", brand="Adidas", category="Running", price=100, stock=8),
-    ]
 
-    for p in products:
-        db.add(p)
-
-    db.commit()
-
-    return {"message": "Productos insertados"}
+@app.delete("/chat/history/{session_id}")
+def delete_chat_history(session_id: str, db: Session = Depends(get_db)):
+    """
+    Elimina el historial del chat.
+    """
+    try:
+        repo = ChatRepository(db)
+        repo.delete_session_history(session_id)
+        return {"message": "Historial eliminado"}
+    except Exception as e:
+       raise HTTPException(status_code=500, detail=str(e))

@@ -1,23 +1,33 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# URL de SQLite
+"""
+Configuración de la base de datos usando SQLAlchemy.
+"""
+
 DATABASE_URL = "sqlite:///./data/ecommerce_chat.db"
 
-# Motor de conexión
 engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
 )
 
-# Sesiones
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-# Base para modelos
 Base = declarative_base()
 
 
-# Dependency para FastAPI
 def get_db():
+    """
+    Genera una sesión de base de datos para cada request.
+
+    Yields:
+        Session: sesión activa de base de datos
+    """
     db = SessionLocal()
     try:
         yield db

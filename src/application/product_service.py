@@ -1,6 +1,6 @@
 class ProductService:
     """
-    Servicio que contiene la lógica de negocio relacionada con productos.
+    Lógica de negocio de productos.
     """
 
     def __init__(self, repository):
@@ -14,9 +14,10 @@ class ProductService:
 
     def get_products(self):
         """
-        Obtiene todos los productos desde el repositorio.
+        Retorna todos los productos.
 
         Returns:
             list: lista de productos
         """
         return self.repository.get_all()
+    

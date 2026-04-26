@@ -1,30 +1,38 @@
 from src.infrastructure.llm_providers.gemini_provider import GeminiProvider
 
+
 class ChatService:
-    """
-    Servicio encargado de gestionar la interacción con la IA.
-    """
 
     def __init__(self, repository):
-        """
-        Constructor del servicio.
-
-        Args:
-            repository: repositorio de chat
-        """
         self.repository = repository
-        self.provider = GeminiProvider()
+        self.llm = GeminiProvider()
 
     def send_message(self, session_id: str, message: str):
-        """
-        Procesa un mensaje del usuario y obtiene respuesta de la IA.
 
-        Args:
-            session_id (str): identificador de sesión
-            message (str): mensaje del usuario
+        # guardar mensaje usuario
+        self.repository.save_message(session_id, "user", message)
 
-        Returns:
-            str: respuesta de la IA
+        # obtener historial
+        history = self.repository.get_recent_messages(session_id)
+
+        context = "\n".join(
+            [f"{m.role}: {m.message}" for m in history]
+        )
+
+        prompt = f"""
+        Eres un asistente de ecommerce.
+        Historial:
+        {context}
+
+        Usuario: {message}
         """
-        response = self.provider.generate(message)
+
+        response = self.llm.generate(prompt)
+
+        # guardar respuesta IA
+        self.repository.save_message(session_id, "assistant", response)
+
         return response
+
+    def get_history(self, session_id):
+        return self.repository.get_session_history(session_id)
