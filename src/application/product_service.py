@@ -4,20 +4,13 @@ class ProductService:
     """
 
     def __init__(self, repository):
-        """
-        Constructor del servicio.
-
-        Args:
-            repository: repositorio de productos
-        """
         self.repository = repository
 
     def get_products(self):
-        """
-        Retorna todos los productos.
-
-        Returns:
-            list: lista de productos
-        """
         return self.repository.get_all()
-    
+
+    def get_product_by_id(self, product_id):
+        product = self.repository.get_by_id(product_id)
+        if not product:
+            raise Exception("Producto no encontrado")
+        return product

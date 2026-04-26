@@ -20,5 +20,6 @@ class ProductRepository:
 
     def delete(self, product_id):
         product = self.get_by_id(product_id)
-        self.db.delete(product)
-        self.db.commit()
+        if product:
+            self.db.delete(product)
+            self.db.commit()
