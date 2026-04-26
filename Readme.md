@@ -1,119 +1,125 @@
 
-#  E-commerce Chat API con IA (Clean Architecture)
+#  Ecommerce Chat API
 
-API desarrollada con FastAPI que permite gestionar productos de un e-commerce e interactuar con un asistente inteligente basado en IA (Google Gemini), siguiendo el patrón de Clean Architecture.
-
----
-
-## Tecnologías utilizadas
-
-- Python 3.10+
-- FastAPI  
-- SQLAlchemy  
-- SQLite  
-- Docker  
-- Google Gemini AI  
-- Pydantic  
+API REST desarrollada con FastAPI que permite gestionar productos y un sistema de chat inteligente usando IA.
 
 ---
 
-##  Arquitectura
+##  Descripción
 
-El proyecto sigue **Clean Architecture**, dividido en 3 capas:
+Este proyecto implementa una arquitectura en capas (Domain, Application, Infrastructure) para un sistema de ecommerce con funcionalidades de:
 
-###  1. Dominio (`src/domain`)
-Contiene las reglas de negocio puras:
-- Entidades (`Product`, `ChatMessage`, `ChatContext`)
-- Interfaces de repositorios  
-
----
-
-###  2. Aplicación (`src/application`)
-Contiene la lógica de negocio:
-- Servicios (`ProductService`, `ChatService`)
-- DTOs (validación de datos)  
+- Gestión de productos
+- Chat inteligente con historial por sesión
+- Persistencia en base de datos SQLite
+- Contenerización con Docker
+- Testing automatizado con Pytest
 
 ---
 
-###  3. Infraestructura (`src/infrastructure`)
-Contiene implementaciones concretas:
-- Base de datos (SQLite)  
-- Repositorios  
-- API (FastAPI)  
-- Integración con IA (Gemini)  
+## Arquitectura
 
----
+El proyecto sigue una arquitectura limpia dividida en:
 
-## Instalación y ejecución
+```
 
-### 🔹 1. Clonar repositorio
+src/
+│
+├── domain/                # Entidades y lógica de negocio pura
+├── application/           # Casos de uso (servicios)
+├── infrastructure/        # DB, API, repositorios, IA
+│   ├── api/
+│   ├── db/
+│   ├── repositories/
+│   └── llm_providers/
 
-```bash
-git clone <TU_REPOSITORIO>
-cd ecommerce-chat-ai
+
 ````
 
 ---
 
-###  2. Crear entorno virtual
+##  Tecnologías utilizadas
+
+- FastAPI
+- SQLAlchemy
+- SQLite
+- Docker
+- Pytest
+- Gemini (IA simulada en testing)
+
+---
+````
+##  Ejecución local
+
+### 1. Crear entorno virtual
 
 ```bash
 python -m venv venv
-```
+````
 
-Activar en Windows:
+### 2. Activar entorno
+
+Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
----
+Linux/Mac:
 
-###  3. Instalar dependencias
+```bash
+source venv/bin/activate
+```
+
+### 3. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-###  4. Configurar variables de entorno
-
-Crear archivo `.env`:
-
-```
-GEMINI_API_KEY=tu_api_key_aqui
-```
-
----
-
-###  5. Ejecutar la aplicación
+### 4. Ejecutar servidor
 
 ```bash
-python -m uvicorn src.infrastructure.api.main:app --reload
+uvicorn src.infrastructure.api.main:app --reload
 ```
 
 ---
 
-###  6. Acceder a Swagger
+## Docker
 
-[http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-##  Docker
-
-Ejecutar con Docker:
+### Construir contenedor
 
 ```bash
-docker-compose up --build
+docker-compose build
+```
+
+### Ejecutar
+
+```bash
+docker-compose up
 ```
 
 ---
 
-##  Endpoints disponibles
+## Endpoints
 
-###  Health Check
+###  Home
+
+```
+GET /
+```
+
+Respuesta:
+
+```json
+{
+  "message": "API funcionando"
+}
+```
+
+---
+
+### Health Check
 
 ```
 GET /health
@@ -121,15 +127,15 @@ GET /health
 
 ---
 
-###  Productos
-
-Obtener todos los productos:
+###  Obtener productos
 
 ```
 GET /products
 ```
 
-Obtener producto por ID:
+---
+
+###  Obtener producto por ID
 
 ```
 GET /products/{id}
@@ -137,9 +143,15 @@ GET /products/{id}
 
 ---
 
-###  Chat con IA
+###  Inicializar datos
 
-Enviar mensaje:
+```
+GET /init
+```
+
+---
+
+###  Chat con IA
 
 ```
 POST /chat
@@ -150,13 +162,13 @@ Body:
 ```json
 {
   "session_id": "123",
-  "message": "Recomiéndame productos"
+  "message": "Hola"
 }
 ```
 
 ---
 
-Obtener historial:
+###  Historial de chat
 
 ```
 GET /chat/history/{session_id}
@@ -164,7 +176,7 @@ GET /chat/history/{session_id}
 
 ---
 
-Eliminar historial:
+###  Eliminar historial
 
 ```
 DELETE /chat/history/{session_id}
@@ -172,54 +184,139 @@ DELETE /chat/history/{session_id}
 
 ---
 
-##  Funcionalidades principales
+##  Funcionamiento del Chat
 
- Gestión de productos
- Chat inteligente con IA
- Memoria conversacional por sesión
- Arquitectura limpia (Clean Architecture)
- Persistencia con SQLite
- Contenerización con Docker
+* Guarda cada mensaje en la base de datos
+* Recupera historial reciente
+* Genera contexto
+* Llama al proveedor de IA
+* Guarda la respuesta
+
+ En modo testing, la IA es simulada.
 
 ---
 
-## Testing
+##  Testing
 
-Ejecutar pruebas:
+### Ejecutar pruebas
 
 ```bash
-pytest
+pytest -v
+```
+
+### Tests incluidos
+
+* API:
+
+  * Home
+  * Health
+
+* Productos:
+
+  * Obtener todos
+  * Obtener por ID
+
+* Chat:
+
+  * Envío de mensaje
+  * Historial
+  * Eliminación
+
+---
+
+## Variables de entorno
+
+Crear archivo `.env`:
+
+```
+TESTING=0
+```
+
+En testing:
+
+```
+TESTING=1
 ```
 
 ---
 
-## Evidencias
+##  Base de datos
 
-Las evidencias se encuentran en la carpeta:
+Ubicación:
 
 ```
-/evidencias
+data/ecommerce_chat.db
 ```
 
-Incluyen:
+Tablas:
 
-Swagger UI
-Logs de Docker
-Contenedores corriendo
-Llamados a la API
-Base de datos
+* products
+* chat_memory
 
 ---
 
-##  Autor
+##  Modelo de datos
+
+### Producto
+
+* id
+* name
+* description
+* brand
+* category
+* size
+* color
+* price
+* stock
+
+---
+
+### ChatMemory
+
+* id
+* session_id
+* role
+* message
+* timestamp
+
+---
+
+
+## Problemas comunes
+
+###  Error 500 en /chat
+
+Solución:
+
+* Verificar variable TESTING=1 en pruebas
+* Confirmar que GeminiProvider no llama API real
+
+---
+
+###  No module named 'src'
+
+Solución:
+
+```bash
+set PYTHONPATH=.
+```
+
+---
+
+###  Base de datos vacía
+
+Ejecutar:
+
+```
+GET /init
+```
+
+---
+
+
+## 👩‍💻 Autor
 
 Paulina Velásquez
 
----
 
-##  Notas
-
- El proyecto utiliza Google Gemini como modelo de IA
- Se requiere conexión a internet para el funcionamiento del chat
- Base de datos SQLite local
 
